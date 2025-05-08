@@ -12,17 +12,17 @@ export default function GameBoard({ categoryId, onMatch, onComplete }) {
 	const [matched, setMatched] = useState([]);
 
 	useEffect(() => {
-		// prepare category images
+		// Prepare category placeholders
 		let images = [];
 		if (categoryId === "all") {
-			// flatten all and pick random
+			// Flatten all categories and pick random
 			const all = CATEGORIES.slice(0, 5).flatMap((t) => t.images);
 			shuffle(all);
 			images = all.slice(0, PAIRS_COUNT);
 		} else {
 			images = CATEGORIES.find((t) => t.id === categoryId).images;
 		}
-		const pairImages = shuffle([...images, ...images]);
+		const pairImages = shuffle([...images, ...images]); // Duplicate images for pairs
 		setCards(pairImages.map((img, idx) => ({ id: idx, img })));
 		setFlipped([]);
 		setMatched([]);
@@ -52,31 +52,47 @@ export default function GameBoard({ categoryId, onMatch, onComplete }) {
 		}
 	};
 
+	// Get placeholder colors for categories
+	const getCategoryColor = (img) => {
+		for (const category of CATEGORIES) {
+			if (category.images.includes(img)) {
+				const index = CATEGORIES.indexOf(category);
+				const colors = ["#FFB3B3", "#FFDFBF", "#B3FFB3", "#B3D9FF", "#E1B3FF"];
+				return colors[index % colors.length]; // Assign colors cyclically
+			}
+		}
+		return "#CCCCCC"; // Default color
+	};
+
 	return (
-		<div className="grid grid-cols-4 gap-4">
-			{cards.map((card) => {
-				const isFlipped =
-					flipped.includes(card.id) || matched.includes(card.id);
-				return (
-					<motion.div
-						key={card.id}
-						onClick={() => handleFlip(card)}
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}
-						className={`aspect-square bg-white/20 border-2 border-white/30 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm cursor-pointer ${
-							isFlipped ? "bg-white" : ""
-						}`}
-					>
-						{isFlipped && (
-							<img
-								src={`/assets/${card.img}.png`}
-								alt={card.img}
-								className="object-contain h-3/4"
-							/>
-						)}
-					</motion.div>
-				);
-			})}
+		<div className="w-full flex items-center justify-center p-4">
+			<div className="w-full max-w-[90vw] sm:max-w-[70vw] md:max-w-[60vw] mx-auto border-2 border-gray-300 rounded-lg p-6 bg-white">
+				<div className="grid grid-cols-4 gap-4 place-content-center">
+					{cards.map((card) => {
+						const isFlipped =
+							flipped.includes(card.id) || matched.includes(card.id);
+						const color = getCategoryColor(card.img);
+						return (
+							<motion.div
+								key={card.id}
+								onClick={() => handleFlip(card)}
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								className="aspect-square border-2 border-gray-400 rounded-lg flex items-center justify-center shadow-md cursor-pointer text-xs sm:text-sm md:text-base"
+								style={{
+									backgroundColor: isFlipped ? "white" : color,
+									color: isFlipped ? "black" : "white",
+									width: "5rem",
+									maxWidth: "5rem",
+								}}
+							>
+								{isFlipped && <span className="font-bold">{card.img}</span>}
+								{!isFlipped && <span className="font-bold">?</span>}
+							</motion.div>
+						);
+					})}
+				</div>
+			</div>
 		</div>
 	);
 }

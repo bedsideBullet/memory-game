@@ -1,13 +1,15 @@
 import React, { useState } from "react";
+import { useTheme } from "./contest/ThemeContext";
 import CategorySelector from "./components/CategorySelector";
 import Timer from "./components/Timer";
-import Scoreboard from "./components/Scoreboard";
+import ScoreboardDrawer from "./components/ScoreboardDrawer";
 import GameBoard from "./components/GameBoard";
 import { saveHighScore } from "./utils/storage";
 import { INITIAL_TIME, TIME_DECREMENT } from "./constants";
-import ScoreboardDrawer from "./components/ScoreboardDrawer";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 export default function App() {
+	const { currentTheme } = useTheme();
 	const [category, setCategory] = useState("category1");
 	const [level, setLevel] = useState(1);
 	const [score, setScore] = useState(0);
@@ -41,13 +43,18 @@ export default function App() {
 	};
 
 	return (
-		<main className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-800 p-4 flex flex-col items-center">
-			<h1 className="text-white text-4xl font-bold mb-4">
-				Video Game Memory Match
-			</h1>
+		<main
+			className="min-h-screen p-4 flex flex-col items-center"
+			style={{
+				background: currentTheme.colors.background,
+				color: currentTheme.colors.text,
+				fontFamily: currentTheme.font,
+			}}
+		>
+			<h1 className="text-4xl font-bold mb-4">Video Game Memory Match</h1>
 			<div className="flex gap-6 mb-4">
-				<div className="text-white">Level: {level}</div>
-				<div className="text-white">Score: {score}</div>
+				<div>Level: {level}</div>
+				<div>Score: {score}</div>
 				<Timer
 					timeLeft={timeLeft}
 					onTick={handleTick}
@@ -55,13 +62,14 @@ export default function App() {
 				/>
 			</div>
 			<CategorySelector selected={category} onSelect={setCategory} />
-			<ScoreboardDrawer />
+			<ErrorBoundary>
+				<ScoreboardDrawer />
+			</ErrorBoundary>
 			<GameBoard
 				categoryId={category}
 				onMatch={handleMatch}
 				onComplete={handleComplete}
 			/>
-			{/* <div className="mt-6 w-full max-w-xs">{ <Scoreboard /> }</div> */}
 		</main>
 	);
 }
